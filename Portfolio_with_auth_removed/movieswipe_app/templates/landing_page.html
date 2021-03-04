@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container justify-content-center">
+    <div class="row">
+        <h3 class="text-center">Landing Page</h3>
+        <div class="col">
+            <div class="card shadow mx-auto w-75 my-5 py-5 bg-light">
+                <h5 style="text-align:center" class="card-title">Code</h5>
+                <div class="card-body">
+                    <div class="d-grid gap-2 col-6 mx-auto">
+                        <button id="host_party" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#host_party_modal">Host a Party</button>
+                        <button id="join_party" class="btn btn-info btn-lg" data-bs-toggle="modal" data-bs-target="#join_party_modal">Join a Party</button>
+                        <button id="ready_party" class="btn btn-success btn-lg">Ready</button>
+                        <button class="btn btn-danger btn-lg">Quit Party</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="host_party_modal" tabindex="-1" role="dialog" aria-labelledby="host_party_modal_label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="host_party_modal_label">Host Code</h5>
+            </div>
+            <div class="modal-body">
+                <form id="host_form">
+                    <div class="input-group mb-3">
+                        <input id="host_name" class="form-control" placeholder="Name">
+                    </div>
+                    <div class="input-group">
+                        <div class="btn-group-vertical">
+                            <input id="genre_anime" class="btn-check" type="checkbox" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="genre_anime">Anime</label>
+                            <input id="genre_action" class="btn-check" type="checkbox" autocomplete="off">
+                            <label class="btn btn-outline-primary" for="genre_action">toast</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="host_submit">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="join_party_modal" tabindex="-1" role="dialog" aria-labelledby="join_party_modal_label" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="join_party_modal_label">Join</h5>
+            </div>
+            <div class="modal-body">
+                <form id="join_form">
+                    <input id="join_name" placeholder="Name">
+                    <input id="host_code" placeholder="Join Code">
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="join_submit">Submit</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<!--<script>
+function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    hostParty = document.getElementById('host_party')
+    hostParty.addEventListener('click', function(e){
+            e.preventDefault()
+            var url = '/movieswipe/host_party/'
+            console.log("Party created")
+            fetch(url, {
+                method:'POST',
+                headers:{
+                'Content-type': 'application/json',
+                'x-CSRFToken': csrftoken,
+            },
+                body:JSON.stringify({click: 'True'})
+                })
+        }
+    )
+    joinParty = document.getElementById('join_party')
+    joinParty.addEventListener('click', function(e){
+            e.preventDefault()
+            console.log("Party joined")
+            var url = '/movieswipe/join_party/'
+            fetch(url, {
+                method:'POST',
+                headers:{
+                'Content-type': 'application/json',
+                'x-CSRFToken': csrftoken,
+            },
+                body:JSON.stringify({click: 'True'})
+                })
+        }
+    )
+    readyParty = document.getElementById('ready_party')
+    readyParty.addEventListener('click', function(e){
+            e.preventDefault()
+            console.log("Party Ready")
+        }
+    )
+</script>-->
+
+
+{% endblock %}

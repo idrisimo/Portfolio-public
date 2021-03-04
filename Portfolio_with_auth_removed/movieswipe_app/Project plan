@@ -1,0 +1,8 @@
+Design pattern - MVC
+
+Model
+-
+Controller
+-deals with failure/success of request
+View
+-swipe feature

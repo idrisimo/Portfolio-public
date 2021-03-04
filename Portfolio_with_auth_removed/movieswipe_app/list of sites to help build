@@ -1,0 +1,13 @@
+https://developers.themoviedb.org/3/getting-started/introduction
+http://ericanafziger.com/streamsearch.html
+https://www.hackdoor.io/articles/build-full-featured-tinder-carousel-vanilla-javascript-cdbb2b786f77
+
+Things learnt while building this project
+-----------------------------------------
+# Technologies
+AWS dynamoDB and in general non sql database models
+The proper way to use *args and **kwargs
+
+#Other
+Proper planning of database structure as well as UI/UX elements
+

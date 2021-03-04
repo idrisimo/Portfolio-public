@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="text-center">Time to Post</h1>
+    <hr>
+    <style>.imageStyle {margin-left: auto;
+                    margin-right: auto;
+                    width:100px;
+                    height:100px;
+                    display: block;}
+</style>
+    <div class="row justify-content-center">
+        <div class="col-md-2">
+            <img id="iconID" class="rounded-circle imageStyle" src="{% static 'images/Reddit-logo.png' %}">
+        </div>
+
+    </div>
+    <div class="row justify-content-center py-5">
+        <div class="card col-md-7 bg-secondary text-white">
+            <div class="card-body" id="form_wrap">
+                <form method="POST" action="" id="redditForm">
+                    {% csrf_token %}
+                    <div class="form-group text-center">
+                        <label id="subNameLabel" for="SubNameInput">Current subreddit selected: r/</label>
+                        <input type="text" class="form-control" id="SubNameInput" placeholder="Enter your sub of choice" name="SubNameInput" required>
+                        <button id="formButton" type="submit" value="Submit" class="btn btn-info">
+                            <span id="spinner" ></span>
+                            Submit
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+    <style>
+    @import url('https://fonts.googleapis.com/css?family=Roboto&display=swap');
+    .chart--container {
+      height: 100%;
+      width: 100%;
+      min-height: 530px;
+      margin: 0 auto;
+      border-radius: 25px;
+    }
+
+    .zc-ref {
+      display: none;
+    }
+  </style>
+
+    <div id="myChart" class="chart--container">
+        <a href="https://www.zingchart.com/" rel="noopener" class="zc-ref">Powered by ZingChart</a>
+    </div>
+    <script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    var redditNameForm = document.getElementById('form_wrap')
+    redditNameForm.addEventListener('submit', function(e){
+        e.preventDefault()
+        console.log('Form submitted')
+        var subRedditName =  document.getElementById('SubNameInput').value
+        console.log(subRedditName)
+        var sendUrl = '/project1/timetopost/collectdata/'
+        document.getElementById("subNameLabel").innerHTML = 'Current subreddit selected: r/' + subRedditName
+        document.getElementById("spinner").setAttribute("class", " spinner-border spinner-border-sm")
+        document.getElementById("formButton").setAttribute("disabled", "")
+        fetch(sendUrl, {
+            method: 'POST',
+                headers:{
+                    'Content-type': 'application/json',
+                    'x-CSRFToken': csrftoken,
+                },
+                body:JSON.stringify({
+                    'subRedditName':subRedditName
+                })
+            }).then(function(response){
+
+                var getUrl = '/project1/timetopost/showdata/'
+                fetch(getUrl)
+                .then(resp => resp.json())
+                .then(function(data){
+                    var redditData = data
+                    var subreddit_array = redditData.subreddit_array
+                    var subreddit_icon = redditData.subreddit_icon
+                    console.log(subreddit_icon)
+                    console.log(subreddit_array)
+                    var iconWrap = document.getElementById('icon_wrapper')
+                    document.getElementById("iconID").setAttribute("src", subreddit_icon)
+                    document.getElementById("spinner").removeAttribute("class", " spinner-border spinner-border-sm")
+                    document.getElementById("formButton").removeAttribute("disabled", "")
+                    zingchart.exec("myChart", "setseriesvalues", {values: subreddit_array})
+                    document.getElementById('redditForm').reset()
+
+                })
+            })
+    })
+
+    ZC.LICENSE = ["569d52cefae586f634c54f86dc99e6a9", "b55b025e438fa8a98e32482b5f768ff5"]; // CHART CONFIG
+    // -----------------------------
+    let chartConfig = {
+      globals: {
+        fontFamily: 'Roboto'
+      },
+
+      graphset: [{
+        type: 'piano',
+        theme: 'classic',
+        backgroundColor: '#efefef',
+        noData:{
+            text: "Currently no data, please enter a subreddit above.",
+            fontSize: 18,
+            bold: true
+        },
+        plot: {
+          tooltip: {
+            text: '  %v amount of posts.',
+            fontColor: 'white',
+            fontSize: '14px',
+            textAlign: 'left'
+          },
+          aspect: 'brightness',
+          borderColor: '#eeeeee',
+          borderRadius: '7px',
+          borderWidth: '2px',
+          rules: [
+            {
+              backgroundColor: '#FF5700',
+              fontColor: '#05636c',
+              rule: '%v >=0 && %v <= 12'
+            }
+
+          ]
+        },
+        plotarea: {
+          margin: 'dynamic'
+        },
+        scaleX: {
+          values: {{time}},
+          guide: {
+            visible: false
+          },
+          item: {
+            borderColor: 'none',
+            fontColor: '#05636c',
+            size: '13px'
+          },
+          lineWidth: '0px',
+          placement: 'opposite',
+          tick: {
+            visible: false
+          },
+          zooming: true,
+          zoomSnap: true
+        },
+        scaleY: {
+          values: ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'],
+          guide: {
+            visible: false
+          },
+          item: {
+            borderColor: 'none',
+            fontColor: '#05636c',
+            size: '13px'
+          },
+          lineWidth: '0px',
+          mirrored: true,
+          tick: {
+            visible: false
+          },
+          zooming: true
+        },
+        zoom: {
+          alpha: 0.75,
+          backgroundColor: '#e5e8ea',
+          borderColor: '#009',
+          borderWidth: '2px',
+          preserveZoom: true
+        },
+        scrollX: {
+          bar: {
+            alpha: .5,
+            backgroundColor: '#01579B',
+            borderRadius: '3px'
+          },
+          handle: {
+            backgroundColor: '#01579B',
+            borderRadius: '5px',
+            borderTop: 'none',
+            borderRight: 'none',
+            borderBottom: 'none',
+            borderLeft: 'none'
+          }
+        },
+        scrollY: {
+          bar: {
+            alpha: .5,
+            backgroundColor: '#01579B',
+            borderRadius: '3px'
+          },
+          handle: {
+            backgroundColor: '#01579B',
+            borderRadius: '5px',
+            borderTop: 'none',
+            borderRight: 'none',
+            borderBottom: 'none',
+            borderLeft: 'none'
+          }
+        },
+        series: [
+
+        ]
+      }]
+    };
+
+    // RENDER CHARTS
+    // -----------------------------
+    zingchart.render({
+      id: 'myChart',
+      data: chartConfig
+    });
+
+  </script>
+</div>
+{% endblock %}

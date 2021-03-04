@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="jumbotron jumbobg">
+    <div class="container" style="height:100vh;">
+        <h1 class="display-4 pt-5">Idris Silva</h1>
+        <p class="lead">Software Developer</p>
+        <hr class="my-4">
+        <a href="#projects_anchor"
+           class="btn btn-secondary"
+           style="margin: 0 auto;">
+            Portfolio Projects
+        </a>
+        <a href="{% static 'documents/Idris Silva IT CV.docx' %}"
+           class="btn btn-secondary"
+           style="margin: 0 auto;" download>
+            Resume
+        </a>
+    </div>
+</div>
+
+<!--*****************************Projects section*****************************-->
+
+<div class="container" style="paddng-top: 40px; height: 100%;">
+    <div class="row justify-content-center">
+        <a name="projects_anchor" style="padding-top: 70px; margin-top: -40px;">
+            <h2 class="text-center">
+                Projects
+            </h2>
+        </a>
+    </div>
+    <hr>
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for project in projects %}
+        <div class="col">
+            <div class="card shadow h-100">
+                <a href="/{{ project.urltag }}">
+                    <img class="card-img-top rounded shadow" src="{{ project.s3_image_path }}" alt="Card image cap">
+                </a>
+                <div class="card-body">
+                    <h6 class="card-title">{{ project.title }}</h6>
+                    <p class="card-text">{{ project.description}}</p>
+                    <a href="/{{ project.urltag }}"
+                       class="btn btn-primary">
+                        Try Out
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!--*****************************About section*****************************-->
+
+<div class="container bg-light shadow" style="paddng-top: 40px; height: 100%;">
+    <div class="row justify-content-center">
+        <a name="about_anchor" style="padding-top: 70px; margin-top: -40px;">
+            <h2 class="text-center">
+                About Me
+            </h2>
+        </a>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col">
+            <img class="rounded" src="https://images.pexels.com/photos/577585/pexels-photo-577585.jpeg?cs=srgb&dl=pexels-kevin-ku-577585.jpg&fm=jpg" height="300" width="300">
+        </div>
+        <div class="col bg-light.bg-gradient">
+            <p class="fs-4">I am an intermediate programmer looking to build a career in a more specialised industry as a software developer.
+                I enjoy exploring multiple methods to resolve an issue to find the best solution.
+                For the past year, I have developed skills in Python using a variety of sources to self-study.
+                To date, I have so far built 4 projects displayed on my portfolio, and always looking for inspiration for my next project.
+                Due to the nature of my projects, it has also equipped me with some proficiency in JavaScript and HTML.
+                While I favour working on the back end of projects, I am also competent in dealing with the front end of projects.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!--*****************************Contact section*****************************-->
+
+<div class="container" style="paddng-top: 40px; height: 100vh;">
+    <div class="row justify-content-center">
+        <a name="contact_anchor" style="padding-top: 70px; margin-top: -40px;">
+            <h2 class="text-center">
+                Contact
+            </h2>
+        </a>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-md-10">
+            <div class="card bg-light shadow">
+                <div class="card-body">
+                    <h4 class="card-title">Contact form</h4>
+                    <form id="email_form">
+                        <div class="row">
+                            <div class="col-7">
+                                <input id="email" type="email" class="form-control" placeholder="email@address.com">
+                            </div>
+                            <div class="col-auto">
+                                <input id="name" type="text" class="form-control" placeholder="Your Name">
+                            </div>
+                        </div>
+                        <div class="row py-3">
+                            <div class="col-10">
+                                <textarea id="comment" class="form-control" placeholder="Message" rows="3"></textarea>
+                            </div>
+                            <div class="col-auto">
+                                <input id="contactSubmit" class="btn btn-primary" type="submit">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex col justify-content-md-center">
+            <div class="row">
+                <a href="https://linkedin.com/in/idris-silva" target="_blank" rel="noopener noreferrer"><img src="{% static 'images/LI-In-Bug.png' %}" height="64" width="76" alt="LinkedIn"></a>
+                <a href="https://github.com/idrisimo" target="_blank" rel="noopener noreferrer"><img src="{% static 'images/GitHub-Mark-64px.png' %}" alt="GitHub"></a>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="https://platform.linkedin.com/badges/js/profile.js" async defer></script>
+<script type="text/javascript">
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+    var form = document.getElementById('email_form')
+    form.addEventListener('submit', function(e){
+        e.preventDefault()
+        console.log('Form submitted')
+        var url = '/contact_api/'
+        var email_address = document.getElementById('email').value
+        var name = document.getElementById('name').value
+        var comment = document.getElementById('comment').value
+
+        fetch(url, {
+            method: 'POST',
+            headers:{
+                'Content-type': 'application/json',
+                'x-CSRFToken': csrftoken,
+            },
+            body:JSON.stringify({
+                'email_address':email_address ,
+                'name':name,
+                'comment':comment
+            })
+        }).then(function(response){
+            window.alert("Message sent. Thank you!")
+            document.getElementById('email_form').reset()
+        })
+    })
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<h3>Register</h3>
+
+
+<form method="POST" action="">
+    {% csrf_token %}
+    {{user_creation_form.as_p}}
+    <input class="btn btn-primary" type="submit" name="Create User">
+</form>
+
+{% endblock %}

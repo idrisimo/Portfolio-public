@@ -1,0 +1,99 @@
+
+
+<div class="container">
+    <div class="card card-body">
+        <h3 class=" card-title text-center">Whats your plan for today?</h3>
+        <hr>
+        <div class="row justify-content-center">
+
+            <div class="col-md-5" align="center">
+                <div class="card mb-5 bg-secondary text-white">
+                    <div class="card-body">
+                        <form action="" method="POST">
+                            {% csrf_token %}
+                            {{ form }}
+                            <input type="submit" value="Add" class="btn btn-info">
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row py-5">
+            <div class="col-md-6">
+                <div class="card card-body border-light">
+                    <h5 class="card-title">Still Todo</h5>
+                    <div class="col-sm">
+                        <a href="{% url 'todo_app:deleteall' %}" class="btn btn-danger">
+                            Delete All
+                        </a>
+                    </div>
+                    <hr>
+                    <div class="row mt20">
+                        <div class="list-group col-lg-12">
+                            {% for todo in todo_list %}
+                            {% if not todo.complete  %}
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'todo_app:complete' todo.id  %}" class="list-group-item list-group-item-action">
+                                    {{ todo.list_item }}
+                                </a>
+                                <a href="#" class="btn btn-info" data-toggle="modal" data-target="#Modal{{todo.id}}" data-type="bug">Update</a>
+                            </div>
+                            <!-- Modal have a look at https://www.ict.social/html-css/bootstrap/bootstrap-modal-dialogs-->
+                            <div class="modal fade" id="Modal{{todo.id}}" tabindex="-1" role="dialog" aria-labelledby="ModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="ModalLabel">{{ todo.list_item}}</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form action="" method="POST">
+                                                {{todo.id}}
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                                                    <input type="submit" value="Save changes" class="btn btn-primary">
+                                                </div>
+
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card card-body border-light">
+
+                    <h5 class="card-title">Completed</h5>
+                    <div class="col-sm">
+                        <a href="{% url 'todo_app:deletecomplete' %}" class="btn btn-warning">
+                            Delete Completed
+                        </a>
+                    </div>
+
+                    <hr>
+                    <div class="row mt20">
+                        <div class="list-group col-lg-12">
+                            {% for todo in todo_list %}
+                            {% if todo.complete %}
+                            <div class="btn-group" role="group">
+                                <a href="{% url 'todo_app:complete' todo.id  %}"class="list-group-item list-group-item-action active">
+                                    {{ todo.list_item }}
+                                </a>
+                                <a href="#" class="btn btn-info">Update</a>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<script src="https://www.gstatic.com/charts/loader.js"></script>
+<div class="container">
+    <div id="sideNav" class="sidenav bg-dark text-white">
+        <button style="margin-left: 200px;" class="btn btn-dark btn-lg" onclick="closeNav()">&times;</button>
+        <button class="btn  btn-dark btn-lg btn-block">Dashboard</button>
+        <hr>
+        <button class="btn  btn-dark btn-lg btn-block" data-bs-toggle="collapse" data-bs-target="#filter_wrapper">Filters</button>
+        <div id="filter_wrapper" class="collapse">
+            <button type="button" class="btn btn-secondary btn-block" data-toggle="collapse" data-target="#dateSearcher_wrap">Date</button>
+            <div class="collapse" id="dateSearcher_wrap">
+                <form id="searcher">
+                    <div class="input-group">
+                        <div class="col-lg">
+                            <span class="input-group-text">Start Date:</span>
+                            <input id="dateFrom" class="form-control" type="date">
+                        </div>
+                        <div class="col-lg">
+                            <span class="input-group-text">End Date:</span>
+                            <input id="dateTo" class="form-control" type="date">
+                        </div>
+                        <input id="submitSearch" class="btn btn-info btn-block" type="submit">
+                    </div>
+                </form>
+            </div>
+        </div>
+        <button class="btn  btn-dark btn-lg btn-block">Reports</button>
+    </div>
+
+    <div id="main">
+        <h1 class="card-title text-center pt-5">Expense Tracker</h1>
+        <hr>
+        <div class="row justify-content-center">
+            <div class="card">
+                <div class="card-body" id="form_wrap">
+                    <form id="form">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <select class="form-select" id="isExpense">
+                                    <option selected>Select type</option>
+                                    {% for item in is_expense_list %}
+                                    <option> {{ item }}  </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <input id="date" class="form-control" type="date">
+                            <select class="form-select" id="categorySelect">
+                                <option selected>Select category</option>
+                                {% for catItem in example_cat_list %}
+                                <option> {{ catItem }}  </option>
+                                {% endfor %}
+                            </select>
+                            <input id="title" class="form-control" type="text" name="title" placeholder="Enter Item Name">
+                            <input id="amount" class="form-control" type="number" step=".01" name="title" placeholder="Enter amount">
+                            <input id="submit" class="btn" type="submit">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="mt-5">
+        <button class="btn btn-secondary" onclick="openNav()" disabled>Filter Tab</button>
+        <button id="showChart" class="btn btn-secondary" data-bs-toggle="collapse" data-bs-target="#sankeyWrapper">Show Breakdown</button>
+        </div>
+        <div id="sankeyWrapper" class="collapse" style="width: 900px; height: 300px;">
+
+        </div>
+        <table id="tableWrap" class="table table-striped">
+            <thead class="thead-dark">
+            <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Category</th>
+                <th scope="col">Name</th>
+                <th scope="col">Amount</th>
+                <th scope="col">Balance</th>
+                <th scope="col">Edit/Delete</th>
+            </tr>
+            </thead>
+            <tbody id="tableBody">
+
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+
+<script>
+    function openNav(){
+        document.getElementById('sideNav').style.width = '250px'
+        document.getElementById('main').style.marginLeft = '250px'
+    }
+    function closeNav(){
+        document.getElementById('sideNav').style.width = '0'
+        document.getElementById('main').style.marginLeft = '0'
+    }
+</script>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+    const csrftoken = getCookie('csrftoken');
+
+    var activeItem = null
+    var list_snapshot = []
+    buildList()
+
+    function buildList(){
+
+        var tableList = document.getElementById('tableBody')
+        var total = 0
+        var url = '/expense-list/'
+        fetch(url)
+        .then((resp) => resp.json())
+        .then(function(data){
+                var list = data
+                for (var i in list){
+
+                    try{
+                        document.getElementById(`data-row-${i}`).remove()
+                    }
+                    catch(err){
+
+                    }
+
+                    var amountNum =  parseFloat(list[i].amount)
+                    total += amountNum
+                    var itemDetails =`
+                        <td>${list[i].date}</td>
+                        <td>${list[i].category}</td>
+                        <td>${list[i].name}</td>
+                        <td class="poundSterlingSymbol">${list[i].amount}</td>
+                        <td class="poundSterlingSymbol">${total.toFixed(2)}</td>
+                    `
+
+
+                    var item = `
+                        <tr class="datarow" id="data-row-${i}">
+                            ${itemDetails}
+                            <td>
+                                <button class="btn btn-sm btn-outline-info edit">Edit</button>
+                                <button class="btn btn-sm btn-outline-dark delete">X</button>
+                            </td>
+                        </tr>
+                        `
+
+
+                    tableList.innerHTML += item
+
+                }
+
+                if (list_snapshot.length > list.length){
+                    for(var i = list.length; i < list_snapshot.length; i++){
+                        document.getElementById(`data-row-${i}`).remove()
+                    }
+                }
+
+            list_snapshot = list
+
+            for (var i in list){
+                var editBtn = document.getElementsByClassName('edit')[i]
+                var deleteBtn = document.getElementsByClassName('delete')[i]
+
+                editBtn.addEventListener('click', (function(item){
+                            return function(){
+                                editItem(item)
+                            }
+                        })
+                        (list[i])
+                )
+                deleteBtn.addEventListener('click', (function(item){
+                            return function(){
+                                deleteItem(item)
+                            }
+                        })
+                        (list[i])
+                )
+
+            }
+    graphLoader()
+        google.charts.load('current', {'packages':['sankey']})
+        google.charts.setOnLoadCallback(drawChart)
+        })
+
+    }
+
+    var form = document.getElementById('form_wrap')
+    form.addEventListener('submit', function(e){
+        e.preventDefault()
+        console.log('Form submitted')
+        var url = '/expense-create/'
+
+        if (activeItem != null){
+            var url = `/expense-update/${activeItem.id}/`
+            activeItem = null
+        }
+
+        var isExpense = document.getElementById('isExpense').value
+        var date = document.getElementById('date').value
+        var categorySelect = document.getElementById('categorySelect').value
+        var title = document.getElementById('title').value
+        var amount = document.getElementById('amount').value
+
+        title = title[0].toUpperCase() + title.substring(1)
+
+        fetch(url, {
+            method: 'POST',
+            headers:{
+                'Content-type': 'application/json',
+                'x-CSRFToken': csrftoken,
+            },
+            body:JSON.stringify({
+                'is_expense':isExpense,
+                'date':date,
+                'category':categorySelect,
+                'name':title,
+                'amount':amount
+            })
+            }).then(function(response){
+                buildList()
+                document.getElementById('form').reset()
+        })
+    })
+    function editItem(item){
+        console.log('edit button clicked:', item)
+        activeItem = item
+
+        document.getElementById('isExpense').value = activeItem.is_expense
+        document.getElementById('date').value = activeItem.date
+        document.getElementById('categorySelect').value = activeItem.category
+        document.getElementById('title').value = activeItem.name
+        document.getElementById('amount').value = activeItem.amount
+    }
+    function deleteItem(item){
+        console.log('delete button clicked:', item)
+        fetch(`/expense-delete/${item.id}/`,{
+            method: 'DELETE',
+            headers:{
+                'Content-type': 'application/json',
+                'x-CSRFToken': csrftoken,
+            }
+        }).then((response) => {
+            buildList()
+        })
+    }
+    var searcher = document.getElementById('dateSearcher_wrap')
+    searcher.addEventListener('submit', function(e){
+       e.preventDefault()
+       var startDate = document.getElementById('dateFrom').value
+       var endDate = document.getElementById('dateTo').value
+       var tableList = document.getElementById('tableBody').children
+       for (var i = 0; i < tableList.length; i++){
+            var tableListDate = tableList[i].innerText.slice(0, 10)
+            if (tableListDate <= startDate || tableListDate >= endDate){
+                tableList[i].style.display ='None'
+            }
+       }
+    })
+function graphLoader(){
+        var itemPrice = 0
+        var income = 0
+        var expense = 0
+        var sankeyArr2 = []
+
+        var tableItems = document.getElementById('tableWrap')
+        for (var i = 1; i < tableItems.rows.length; i++){
+            var sankeyArr1 = []
+            var row = tableItems.rows.item(i).cells
+            itemPrice = parseFloat(row[3].innerText)
+            var itemCat = row[2].innerText
+            if (itemPrice > 0){
+                sankeyArr1[0] = itemCat
+                sankeyArr1[1] = 'Pot'
+                sankeyArr1[2] = itemPrice
+                sankeyArr2[i] = sankeyArr1
+            }else{
+                sankeyArr1[0] = 'Pot'
+                sankeyArr1[1] = itemCat
+                sankeyArr1[2] = Math.abs(itemPrice)
+                sankeyArr2[i] = sankeyArr1
+            }
+
+        }
+        sankeyArr2 = sankeyArr2.filter(function(e){return e})
+
+
+        console.log(sankeyArr2)
+        return sankeyArr2
+
+
+    }
+
+
+    function drawChart() {
+    var data = new google.visualization.DataTable();
+    data.addColumn('string', 'From');
+    data.addColumn('string', 'To');
+    data.addColumn('number', 'Amount');
+    data.addRows(graphLoader());
+
+    // Sets chart options.
+    var options = {
+      width: 600,
+    };
+
+    // Instantiates and draws our chart, passing in some options.
+    var chart = new google.visualization.Sankey(document.getElementById('sankeyWrapper'));
+    chart.draw(data, options);
+    }
+</script>
+<script>
+
+
+
+</script>
+
+{% endblock %}
